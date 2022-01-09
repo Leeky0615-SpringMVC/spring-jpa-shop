@@ -1,5 +1,6 @@
 package jpabook.jpashop.service;
 
+import jpabook.jpashop.domain.Address;
 import jpabook.jpashop.domain.Member;
 import jpabook.jpashop.repository.MemberRepository;
 import jpabook.jpashop.service.MemberService;
@@ -26,9 +27,11 @@ public class MemberServiceTest {
     @Test
     public void 회원가입() throws Exception {
         // given
-        Member member = new Member();
-        member.setName("kim");
 
+        Member member = Member.builder()
+                .name("kim")
+                .address(new Address("서울","서대문구","123-123"))
+                .build();
         // when
         Long saveId = memberService.join(member);
 
@@ -40,10 +43,14 @@ public class MemberServiceTest {
     @Test(expected = IllegalStateException.class)
     public void 중복_회원_예외() throws Exception {
         // given
-        Member memberA = new Member();
-        memberA.setName("kim");
-        Member memberB = new Member();
-        memberB.setName("kim");
+        Member memberA = Member.builder()
+                .name("kim")
+                .address(new Address("서울","서대문구","123-123"))
+                .build();
+        Member memberB = Member.builder()
+                .name("kim")
+                .address(new Address("경기","서대문구","123-123"))
+                .build();
 
         // when
         memberService.join(memberA);

@@ -1,5 +1,6 @@
 package jpabook.jpashop;
 
+import jpabook.jpashop.domain.Address;
 import jpabook.jpashop.domain.Member;
 import jpabook.jpashop.repository.MemberRepository;
 import org.junit.Test;
@@ -24,8 +25,10 @@ public class MemberRepositoryTest {
     @Rollback(false)
     public void testMember(){
         // given
-        Member member = new Member();
-        member.setName("memberA");
+        Member member = Member.builder()
+                .name("memberA")
+                .address(new Address("서울","서대문구","123-123"))
+                .build();
 
         // when
         Long saveId = memberRepository.save(member);
