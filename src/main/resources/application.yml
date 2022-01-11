@@ -21,3 +21,4 @@ spring:
 logging:
   level:
     org.hibernate.SQL: debug # 하이버네이트가 생성하는 SQL이 다보인다.
+#    org.hibernate.type: trace
