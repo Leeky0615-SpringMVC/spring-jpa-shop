@@ -102,4 +102,19 @@ public class OrderRepository {
                         "join fetch o.delivery d", Order.class)
                 .getResultList();
     }
+
+    /**
+     * 실제 DB Query에서는 distinct를 사용하면 한 줄이 모두 같아야 제거된다.
+     * But, JPA에서는 from의 id 값이 같으면 중복제거 한다.
+     * @return
+     */
+    public List<Order> findAllWithItem() {
+        return em.createQuery(
+                "select distinct o from Order o" +
+                        " join fetch o.member m" +
+                        " join fetch o.delivery d" +
+                        " join fetch o.orderItems oi" +
+                        " join fetch oi.item i",Order.class)
+                .getResultList();
+    }
 }
