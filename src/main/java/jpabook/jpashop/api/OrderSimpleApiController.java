@@ -10,6 +10,7 @@ import jpabook.jpashop.repository.order.simplerepository.OrderSimpleQueryReposit
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
@@ -65,8 +66,9 @@ public class OrderSimpleApiController {
      * 참고: fetch join에 대한 자세한 내용은 JPA 기본편 참고(정말 중요함)
      */
     @GetMapping("/api/v3/simple-orders")
-    public Result ordersV3(){
-        List<SimpleOrderDto> collect = orderRepository.findAllWithMemberDelivery().stream()
+    public Result ordersV3(@RequestParam(value = "offset",defaultValue = "0")int offset,
+                           @RequestParam(value = "limit",defaultValue = "100")int limit){
+        List<SimpleOrderDto> collect = orderRepository.findAllWithMemberDelivery(offset,limit).stream()
                 .map(SimpleOrderDto::new)
                 .collect(toList());
         return new Result(collect);
