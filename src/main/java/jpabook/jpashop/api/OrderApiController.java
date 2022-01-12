@@ -11,6 +11,8 @@ import jpabook.jpashop.repository.order.query.OrderFlatDto;
 import jpabook.jpashop.repository.order.query.OrderItemQueryDto;
 import jpabook.jpashop.repository.order.query.OrderQueryDto;
 import jpabook.jpashop.repository.order.query.OrderQueryRepository;
+import jpabook.jpashop.service.query.OrderDto;
+import jpabook.jpashop.service.query.OrderQueryService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,7 +30,7 @@ public class OrderApiController {
 
     private final OrderRepository orderRepository;
     private final OrderQueryRepository orderQueryRepository;
-
+    private final OrderQueryService orderQueryService;
     /**
      * V1. 엔티티 직접 노출
      * - Hibernate5Module 모듈 등록, LAZY=null 처리
@@ -53,7 +55,7 @@ public class OrderApiController {
     public Result ordersV2() {
         return new Result(orderRepository.findAllByString(new OrderSearch())
                 .stream()
-                .map(OrderDto::new)
+                .map(order -> new OrderDto(order))
                 .collect(toList()));
     }
 
@@ -64,10 +66,7 @@ public class OrderApiController {
      */
     @GetMapping("/api/v3/orders")
     public Result ordersV3(){
-        return new Result(orderRepository.findAllWithItem()
-                .stream()
-                .map(OrderDto::new)
-                .collect(toList()));
+        return new Result(orderQueryService.ordersV3());
     }
 
     /**
@@ -109,41 +108,5 @@ public class OrderApiController {
                         e.getKey().getAddress(), e.getValue()))
                 .collect(toList());
         return new Result(collect);
-    }
-
-    @Data
-    static class OrderDto {
-
-        private Long orderId;
-        private String name;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd-EEE HH:mm:ss", timezone = "Asia/Seoul")
-        private LocalDateTime orderDate;
-        private OrderStatus orderStatus;
-        private Address address;
-        private List<OrderItemDto> orderItems;
-
-        public OrderDto(Order order) {
-            orderId = order.getId();
-            name = order.getMember().getName();
-            orderDate = order.getOrderDate();
-            orderStatus = order.getStatus();
-            address = order.getDelivery().getAddress();
-            orderItems = order.getOrderItems().stream()
-                    .map(OrderItemDto::new)
-                    .collect(toList());
-        }
-    }
-
-    @Data
-    static class OrderItemDto{
-        private String itemName; //상품명
-        private int orderPrice; //주문 가격
-        private int count; //주문 수량
-
-        public OrderItemDto(OrderItem orderItem) {
-            itemName = orderItem.getItem().getName();
-            orderPrice = orderItem.getOrderPrice();
-            count = orderItem.getCount();
-        }
     }
 }
