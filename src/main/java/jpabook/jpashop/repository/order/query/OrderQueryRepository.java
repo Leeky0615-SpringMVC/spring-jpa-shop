@@ -1,11 +1,12 @@
 package jpabook.jpashop.repository.order.query;
 
-import jpabook.jpashop.domain.OrderItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 엔티티가 아님 특정 화면에 fit한 것들에 대한 로직
@@ -35,6 +36,44 @@ public class OrderQueryRepository {
     }
 
     /**
+     * 최적화
+     * Query : 루트 1번, 컬렉션 1번
+     * 데이터를 한꺼번에 처리할 때 많이 사용하는 방식
+     * @return
+     */
+    public List<OrderQueryDto> findAllByDto_Optimization() {
+        //루트 조회(toOne 코드를 모두 한번에 조회)
+        List<OrderQueryDto> result = findOrders();
+
+        //orderItem 컬렉션을 Map 한방에 조회
+        Map<Long, List<OrderItemQueryDto>> orderItemMap = findOrderItemMap(toOrderIds(result));
+
+        //루프를 돌면서 컬렉션 추가(추가 쿼리 실행X, 메모리에서 실행)
+        result.forEach(o -> o.setOrderItems(orderItemMap.get(o.getOrderId())));
+
+        return result;
+    }
+
+    private List<Long> toOrderIds(List<OrderQueryDto> result) {
+        return result.stream()
+                .map(o -> o.getOrderId())
+                .collect(Collectors.toList());
+    }
+
+    private Map<Long, List<OrderItemQueryDto>> findOrderItemMap(List<Long> orderIds) {
+        List<OrderItemQueryDto> orderItems = em.createQuery(
+                "select new jpabook.jpashop.repository.order.query.OrderItemQueryDto(oi.order.id,i.name,oi.orderPrice,oi.count)" +
+                        " from OrderItem oi" +
+                        " join oi.item i" +
+                        " where oi.order.id in :orderIds", OrderItemQueryDto.class)
+                .setParameter("orderIds", orderIds)
+                .getResultList();
+
+        return orderItems.stream()
+                .collect(Collectors.groupingBy(OrderItemQueryDto::getOrderId));
+    }
+
+    /**
      * 1:N 관계인 OrderItems 조회
      */
     private List<OrderItemQueryDto> findOrderItems(Long orderId) {
@@ -58,5 +97,6 @@ public class OrderQueryRepository {
                         " join o.delivery d", OrderQueryDto.class)
                 .getResultList();
     }
+
 
 }
