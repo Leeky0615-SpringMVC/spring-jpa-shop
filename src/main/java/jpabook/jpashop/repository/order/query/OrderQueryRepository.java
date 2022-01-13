@@ -1,5 +1,9 @@
 package jpabook.jpashop.repository.order.query;
 
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import jpabook.jpashop.domain.QDelivery;
+import jpabook.jpashop.domain.QMember;
+import jpabook.jpashop.domain.QOrder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -8,15 +12,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static jpabook.jpashop.domain.QDelivery.delivery;
+import static jpabook.jpashop.domain.QMember.member;
+import static jpabook.jpashop.domain.QOrder.order;
+
 /**
  * 엔티티가 아님 특정 화면에 fit한 것들에 대한 로직
  * orderRepository와 관심사를 분리
  */
 @Repository
-@RequiredArgsConstructor
 public class OrderQueryRepository {
 
     private final EntityManager em;
+    private final JPAQueryFactory query;
+
+    public OrderQueryRepository(EntityManager em) {
+        this.em = em;
+        this.query = new JPAQueryFactory(em);
+    }
 
     /**
      * 컬렉션은 별도로 조회

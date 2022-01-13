@@ -38,7 +38,7 @@ public class OrderApiController {
      */
     @GetMapping("/api/v1/orders")
     public Result ordersV1() {
-        List<Order> all = orderRepository.findAllByString(new OrderSearch());
+        List<Order> all = orderRepository.findAll(new OrderSearch());
         for (Order order : all) { //영속성 강제 주입
             order.getMember().getName();
             order.getDelivery().getAddress();
@@ -53,7 +53,7 @@ public class OrderApiController {
      */
     @GetMapping("/api/v2/orders")
     public Result ordersV2() {
-        return new Result(orderRepository.findAllByString(new OrderSearch())
+        return new Result(orderRepository.findAll(new OrderSearch())
                 .stream()
                 .map(order -> new OrderDto(order))
                 .collect(toList()));
